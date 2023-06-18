@@ -1,4 +1,5 @@
-﻿using aspnet_react.DataStore;
+﻿using aspnet_react.Commands;
+using aspnet_react.DataStore;
 using aspnet_react.Models;
 using aspnet_react.Queries;
 using MediatR;
@@ -14,7 +15,7 @@ namespace aspnet_react.Controllers
         private readonly IMediator _mediator;
         private readonly MoviesStore _moviesStore;
 
-        public MoviesController(IMediator mediator, MoviesStore moviesStore) 
+        public MoviesController(IMediator mediator, MoviesStore moviesStore)
         {
             _mediator = mediator;
             _moviesStore = moviesStore;
@@ -23,7 +24,7 @@ namespace aspnet_react.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAllMovies()
         {
-            var movies = await _mediator.Send(new GetMoviesQuery()); 
+            var movies = await _mediator.Send(new GetMoviesQuery());
 
             return Ok(movies);
         }
@@ -35,6 +36,15 @@ namespace aspnet_react.Controllers
             var movies = await _mediator.Send(new GetMoviesQuery());
 
             return Ok(movies);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> AddMovie([FromBody] MoviesRequest moviesRequest)
+        {
+            {
+                await _mediator.Send(new AddMovieCommand(moviesRequest));
+                return StatusCode(201);
+            }
         }
     }
 }

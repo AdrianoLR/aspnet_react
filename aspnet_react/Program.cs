@@ -4,6 +4,7 @@ using MediatR;
 using aspnet_react.Controllers;
 using aspnet_react.DataStore;
 using aspnet_react.Api;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +16,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<MoviesStore>();
 
 // Configure Supabase
-var url = AppConfig.SUPABASE_URL;
-var key = AppConfig.SUPABASE_KEY;
+string apiKey = builder.Configuration["SUPABASE_KEY"];
+string url = builder.Configuration["SUPABASE_URL"];
 
-builder.Services.AddScoped(provider => new Supabase.Client(url, key, new SupabaseOptions
+builder.Services.AddScoped(provider => new Supabase.Client(url, apiKey, new SupabaseOptions
 {
     AutoRefreshToken = true,
     AutoConnectRealtime = true,

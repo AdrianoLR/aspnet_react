@@ -58,22 +58,21 @@ namespace aspnet_react.DataStore
             return moviesResponse;
         }
 
+        [HttpPost]
+        public async Task<long> AddMovie(MoviesRequest request)
+        {
+            var movies = new Movies
+            {
+                Title = request.Title,
+                ItemType = request.ItemType,
+                Date = request.Date,
+                CreatedAt = DateTime.Now,
+            };
 
-        //[HttpPost]
-        //public async Task<IActionResult> PostAsync(MoviesRequest request)
-        //{
-        //    var movies = new Movies
-        //    {
-        //        Title = request.Title,
-        //        ItemType = request.ItemType,
-        //        Date = request.Date,
-        //        CreatedAt = DateTime.Now,
-        //    };
+            var response = await _supabaseClient.From<Movies>().Insert(movies);
+            var newMovies = response.Models.First();
 
-        //    var response = await _client.From<Movies>().Insert(movies);
-        //    var newMovies = response.Models.First();
-
-        //    return Ok(newMovies.Id);
-        //}
+            return newMovies.Id;
+        }
     }
 }
