@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 const FilterMovies = () => {
     const [movies, setMovies] = useState([]);
 
-    const dataType = 1;
+/*    const dataType = 1;*/
 
     useEffect(() => {
         debugger;
-        fetch(`api/movies/`).then((results) => {
+        fetch('api/movies').then((results) => {
             return results.json();
         })
         .then(data => {

@@ -1,4 +1,5 @@
-﻿using aspnet_react.Models;
+﻿using aspnet_react.DataStore;
+using aspnet_react.Models;
 using aspnet_react.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -11,23 +12,29 @@ namespace aspnet_react.Controllers
     public class MoviesController : ControllerBase
     {
         private readonly IMediator _mediator;
-        public MoviesController(IMediator mediator) => _mediator = mediator;
-        
+        private readonly MoviesStore _moviesStore;
+
+        public MoviesController(IMediator mediator, MoviesStore moviesStore) 
+        {
+            _mediator = mediator;
+            _moviesStore = moviesStore;
+        }
+
         [HttpGet]
         public async Task<ActionResult> GetAllMovies()
+        {
+            var movies = await _mediator.Send(new GetMoviesQuery()); 
+
+            return Ok(movies);
+        }
+
+        [HttpGet]
+        [Route("id")]
+        public async Task<ActionResult> GetMovieId(int id)
         {
             var movies = await _mediator.Send(new GetMoviesQuery());
 
             return Ok(movies);
         }
-
-        //[HttpGet]
-        //[Route("id")]
-        //public async Task<ActionResult> GetMovieId(int id)
-        //{
-        //    var movies = await _mediator.Send(new GetMoviesQuery());
-
-        //    return Ok(movies);
-        //}
     }
 }

@@ -18,20 +18,23 @@ namespace aspnet_react.DataStore
         public async Task<IEnumerable<MoviesResponse>> GetAllMovies()
         {
             var response = await _supabaseClient.From<Movies>().Get();
-            var result = response.Models.FirstOrDefault();
+            var result = response.Models.ToList();
 
-            if (result == null) { Results.NotFound(); }
+            if (result == null && result.Count == 0) { Results.NotFound(); }
 
-            var moviesResponse = new MoviesResponse
+            var moviesResponse = new List<MoviesResponse>();
+            foreach (var item in result)
             {
-                Id = result.Id,
-                Title = result.Title,
-                Description = result.Description,
-                ItemType = result.ItemType,
-                Author = result.Director,
-                Date = result.Date,
-                Created_At = result.CreatedAt,
-            };
+                moviesResponse.Add(new MoviesResponse
+                {
+                    Title = item.Title,
+                    Description = item.Description,
+                    ItemType = item.ItemType,
+                    Author = item.Director,
+                    Date = item.Date,
+                    Created_At = item.CreatedAt,
+                });
+            }
 
             return (IEnumerable<MoviesResponse>)moviesResponse;
 
@@ -44,7 +47,6 @@ namespace aspnet_react.DataStore
 
             var moviesResponse = new MoviesResponse
             {
-                Id = result.Id,
                 Title = result.Title,
                 Description = result.Description,
                 ItemType = result.ItemType,
