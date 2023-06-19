@@ -3,6 +3,7 @@ using Supabase;
 using Microsoft.AspNetCore.Mvc;
 using Supabase.Interfaces;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
 
 namespace aspnet_react.DataStore
 {
@@ -36,43 +37,86 @@ namespace aspnet_react.DataStore
                 });
             }
 
-            return (IEnumerable<MoviesResponse>)moviesResponse;
+            return moviesResponse;
 
         }
         public async Task<MoviesResponse> GetMovieId(int id)
         {
-            var response = await _supabaseClient.From<Movies>().Where(n => n.Id == id).Get();
+            var moviesResponse = new MoviesResponse();
 
-            var result = response.Models.FirstOrDefault();
-
-            var moviesResponse = new MoviesResponse
+            try
             {
-                Title = result.Title,
-                Description = result.Description,
-                ItemType = result.ItemType,
-                Author = result.Director,
-                Date = result.Date,
-                Created_At = result.CreatedAt,
-            };
+
+                var response = await _supabaseClient.From<Movies>().Where(n => n.Id == id).Get();
+
+                var result = response.Models.FirstOrDefault();
+
+                moviesResponse.Title = result.Title;
+                moviesResponse.Description = result.Description;
+                moviesResponse.ItemType = result.ItemType;
+                moviesResponse.Author = result.Director;
+                moviesResponse.Date = result.Date;
+                moviesResponse.Created_At = result.CreatedAt;
+                moviesResponse.CoverImageUrl = _supabaseClient.Storage.From("cover-images").GetPublicUrl($"movies-{id}.jpg");
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error to get movie by id:{ex.Message}");
+            }
 
             return moviesResponse;
         }
 
-        [HttpPost]
-        public async Task<long> AddMovie(MoviesRequest request)
+        public async Task<Movies> AddMovie(MoviesRequest request)
         {
-            var movies = new Movies
+            var newMovies = new Movies();
+
+            try
             {
-                Title = request.Title,
-                ItemType = request.ItemType,
-                Date = request.Date,
-                CreatedAt = DateTime.Now,
-            };
+                var movies = new Movies
+                {
+                    Title = request.Title,
+                    ItemType = request.ItemType,
+                    Date = request.Date,
+                    CreatedAt = DateTime.Now,
+                };
 
-            var response = await _supabaseClient.From<Movies>().Insert(movies);
-            var newMovies = response.Models.First();
+                var response = await _supabaseClient.From<Movies>().Insert(movies);
+                newMovies = response.Models.First();
 
-            return newMovies.Id;
+                using var memoryStream = new MemoryStream();
+                await request.CoverImage.CopyToAsync(memoryStream);
+
+                var lastIndexOfDot = request.CoverImage.FileName.LastIndexOf('.');
+                string extension = request.CoverImage.FileName.Substring(lastIndexOfDot + 1);
+
+                await _supabaseClient.Storage.From("cover-images").Upload(
+                    memoryStream.ToArray(),
+                    $"movies-{newMovies.Id}.{extension}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error in the post method:{ex.Message}");
+            }
+
+            return newMovies;
+        }
+
+        public async Task<IResult> DeleteMovieById(int id)
+        {
+            try
+            {
+                await _supabaseClient.From<Movies>().Where(n => n.Id == id).Delete();
+                
+                await _supabaseClient.Storage.From("cover-images")
+                    .Remove(new List<string> { $"movies-{id}.jpg"});
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error to DELETE movie by id:{ex.Message}");
+            }
+            return Results.NoContent();
         }
     }
 }

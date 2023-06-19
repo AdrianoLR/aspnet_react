@@ -13,12 +13,10 @@ namespace aspnet_react.Controllers
     public class MoviesController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly MoviesStore _moviesStore;
 
         public MoviesController(IMediator mediator, MoviesStore moviesStore)
         {
             _mediator = mediator;
-            _moviesStore = moviesStore;
         }
 
         [HttpGet]
@@ -30,10 +28,10 @@ namespace aspnet_react.Controllers
         }
 
         [HttpGet]
-        [Route("id")]
+        [Route("{id:int}", Name = "GetMoviewById")]
         public async Task<ActionResult> GetMovieId(int id)
         {
-            var movies = await _mediator.Send(new GetMoviesQuery());
+            var movies = await _mediator.Send(new GetMovieByIdQuery(id));
 
             return Ok(movies);
         }
@@ -41,10 +39,17 @@ namespace aspnet_react.Controllers
         [HttpPost]
         public async Task<ActionResult> AddMovie([FromBody] MoviesRequest moviesRequest)
         {
-            {
-                await _mediator.Send(new AddMovieCommand(moviesRequest));
-                return StatusCode(201);
-            }
+            var result = await _mediator.Send(new AddMovieCommand(moviesRequest));
+            return CreatedAtRoute("GetProductById", new { id = result.Id }, result);
+        }
+
+        [HttpDelete]
+        [Route("{id:int}")]
+        public async Task<ActionResult> DeleteMovieId(int id)
+        {
+            var movies = await _mediator.Send(new DeleteMovieByIdCommand(id));
+
+            return Ok(movies);
         }
     }
 }

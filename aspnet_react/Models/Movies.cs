@@ -29,5 +29,6 @@ namespace aspnet_react.Models
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+
     }
 }

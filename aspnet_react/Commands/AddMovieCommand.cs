@@ -3,5 +3,5 @@ using MediatR;
 
 namespace aspnet_react.Commands
 {
-    public record AddMovieCommand(MoviesRequest moviesRequest) : IRequest;
+    public record AddMovieCommand(MoviesRequest moviesRequest) : IRequest<Movies>;
 }

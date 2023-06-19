@@ -6,12 +6,17 @@ using MediatR;
 
 namespace aspnet_react.Handler
 {
-    public class AddMoviesHandler : IRequestHandler<AddMovieCommand>
+    public class AddMoviesHandler : IRequestHandler<AddMovieCommand, Movies>
     {
         private readonly MoviesStore _moviesStore;
         public AddMoviesHandler(MoviesStore moviesStore) => _moviesStore = moviesStore;
-        public async Task Handle(AddMovieCommand request, CancellationToken cancellationToken) 
-            => await _moviesStore.AddMovie(request.moviesRequest);
+        public async Task<Movies> Handle(AddMovieCommand request, CancellationToken cancellationToken)
+        {
+            var result = await _moviesStore.AddMovie(request.moviesRequest);
+
+            return result;
+
+        }
         
     }
 }
