@@ -1,1 +1,1 @@
-A Aspnet project with React + MediatR and Supabase 
+An AspNet project with React + MediatR and Supabase 
